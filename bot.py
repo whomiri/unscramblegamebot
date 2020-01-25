@@ -69,6 +69,9 @@ def gameEndTimer(update, context):
 
 def gameEnder(update, context):
     chat_id = update.message.chat_id
+    t = games[chat_id]["gameEndTimer"]
+    t.kill()
+    t.join()
     games[chat_id]["active"] = False
     games[chat_id]["timer"].cancel()
     players = games[chat_id]["players"]
@@ -146,7 +149,7 @@ def forceStartGame(update, context):
     t.join()
     context.bot.send_message(chat_id=update.effective_chat.id, text='Starting game... Buckle Up!')
     games[update.message.chat_id]["active"] = True
-    games[chat_id]["gameEndTimer"] = threading.Timer(1, gameEndTimer, args=(update,context))
+    games[chat_id]["gameEndTimer"] = KillableThread(target=gameEndTimer, args=(update,context))
     games[chat_id]["gameEndTimer"].start()
     return setAndSendWord(update, context)
 
