@@ -1,14 +1,8 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import logging, random, string, time
 import threading 
 import os
-
-class FilterNoShit(BaseFilter):
-    def filter(self, message):
-        return True
-
-this_filter_aint_filtering_shit = FilterNoShit()
 
 TOKEN = os.environ['TOKEN']
 bot_id = TOKEN=os.environ['BOTID']
@@ -240,7 +234,7 @@ dispatcher.add_handler(startGame_handler)
 dispatcher.add_handler(extendJoinTime_handler)
 dispatcher.add_handler(forceStartGame_handler)
 dispatcher.add_handler(MessageHandler(Filters.text, checkSolution))
-dispatcher.add_handler(MessageHandler(this_filter_aint_filtering_shit, checkGroupAddition), group=9)
+dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, checkGroupAddition), group=9)
 
 updater.start_polling()
 updater.idle()
