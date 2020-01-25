@@ -34,7 +34,7 @@ def start(update, context):
             if user["id"] not in games[chat_id]["players"] and not games[chat_id]["active"]:
                 games[chat_id]["players"][user['id']] = {"score":0, "data":user}
                 context.bot.send_message(chat_id=update.effective_chat.id, text="You've joined the game!")
-                context.bot.send_message(chat_id=chat_id, text=f'[{user["first_name"]} {user["last_name"]}](tg://user?id={user["id"]}) joined the game', parse_mode='markdown')
+                context.bot.send_message(chat_id=chat_id, text=f'[{user["first_name"]}](tg://user?id={user["id"]}) joined the game', parse_mode='markdown')
                 return
             elif games[chat_id]["active"]:
                 context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you can't join an active game.")
@@ -55,7 +55,7 @@ def players(update, context):
     players = [(k, v) for k, v in finalPlayers.items()]
     message = 'Players:\n'
     for item in players:
-        message += f'[{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"]}](tg://user?id={item[1]["data"]["id"]})\n'
+        message += f'[{item[1]["data"]["first_name"]}](tg://user?id={item[1]["data"]["id"]})\n'
     update.message.reply_markdown(message)
 
 def sendEndTimer(update, context, remaining, index):
@@ -79,9 +79,12 @@ def gameEnder(update, context):
     finalPlayers = {k: v for k, v in sorted(players.items(), key=lambda item: item[1]['score'], reverse=True)}
     players = [(k, v) for k, v in finalPlayers.items()]
     winner = players[0]
-    message = f'The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"]}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}\n\nPlayers:\n'
+    if(winner[1]["score"] == 0):
+        message = "There's no winner\n\nplayers:\n"
+    else:
+        message = f'The Winner is [{winner[1]["data"]["first_name"]}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}\n\nPlayers:\n'
     for item in players:
-        message += f'{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"]}: {item[1]["score"]}\n'
+        message += f'{item[1]["data"]["first_name"]}: {item[1]["score"]}\n'
     update.message.reply_markdown(message)
     del games[chat_id]
 
@@ -121,7 +124,7 @@ def checkSolution(update, context):
     if chat_id in games and games[chat_id]["active"]:
         solution = update.message.text.strip().split()[0]
         user = update.message.from_user
-        if(not games[chat_id]["solved"] and solution==games[chat_id]["correct"]):
+        if(not games[chat_id]["solved"] and solution.lower()==games[chat_id]["correct"].lower()):
             games[chat_id]["solved"] = True
             games[chat_id]["timer"].cancel()
             update.message.reply_markdown(f'[{user["first_name"]} {user["last_name"]}](tg://user?id={user["id"]})  solved the word 🥳🥳')
@@ -184,6 +187,7 @@ def gameStarter(update, context):
                     threading.Timer(10, gameEnder, args=(update,context)),
                 ]
         games[update.message.chat_id]["gameEndTimers"][0].start()
+        context.bot.send_message(chat_id=update.effective_chat.id, text='Starting game... Buckle Up!')
         return setAndSendWord(update, context)
     else:
         context.bot.send_message(chat_id=chat_id, text='Not enough players. Cancelling game...')
