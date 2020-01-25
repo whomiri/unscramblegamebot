@@ -1,7 +1,8 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import logging, random, string
+import logging, random, string, time
 import threading 
+from KillableThread import KillableThread
 
 class FilterNoShit(BaseFilter):
     def filter(self, message):
@@ -27,21 +28,51 @@ def start(update, context):
     if(len(context.args)):
         user = update.message.from_user
         chat_id = int(context.args[0])
-        games[chat_id]["players"][user['id']] = {"score":0, "data":user}
-        context.bot.send_message(chat_id=update.effective_chat.id, text="You've joined the game!")
-    else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Hi and welcome to the Unscramble Game Bot!\n\nA bot for playing unscramble competitively in groups. Add this bot to your group to start playing.")
+        if chat_id in games:
+            if user["id"] not in games[chat_id]["players"] and not games[chat_id]["active"]:
+                games[chat_id]["players"][user['id']] = {"score":0, "data":user}
+                context.bot.send_message(chat_id=update.effective_chat.id, text="You've joined the game!")
+                context.bot.send_message(chat_id=chat_id, text=f'[{user["first_name"]} {user["last_name"]}](tg://user?id={user["id"]}) joined the game', parse_mode='markdown')
+                return
+            elif games[chat_id]["active"]:
+                context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, you can't join an active game.")
+                return
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text="There's no game session for this group. Start one by sending the /startGame command in the group")
+            return
+        return
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hi and welcome to the Unscramble Game Bot!\n\nA bot for playing unscramble competitively in groups. Add this bot to your group to start playing.")
+
+def players(update, context):
+    chat_id = update.message.chat_id
+    players = games[chat_id]["players"]
+    finalPlayers = {k: v for k, v in sorted(players.items(), key=lambda item: item[1]['score'], reverse=True)}
+    players = [(k, v) for k, v in finalPlayers.items()]
+    message = 'Players:\n'
+    for item in players:
+        message += f'[{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"]}](tg://user?id={item[1]["data"]["id"]})\n'
+    update.message.reply_markdown(message)
+
+def gameEndTimer(update, context):
+    time.sleep(30)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="one minute left to end of game")
+    time.sleep(30)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="30 seconds left to end of game")
+    time.sleep(20)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="10 seconds left to end of game")
+    time.sleep(10)
+    return gameEnder(update, context)
 
 def gameEnder(update, context):
     chat_id = update.message.chat_id
     games[chat_id]["active"] = False
     games[chat_id]["timer"].cancel()
     players = games[chat_id]["players"]
-    update.message.reply_text("Ending this game session, calculating scores...")
+    context.bot.send_message(chat_id=chat_id, text="Ending this game session, calculating scores...")
     finalPlayers = {k: v for k, v in sorted(players.items(), key=lambda item: item[1]['score'], reverse=True)}
     players = [(k, v) for k, v in finalPlayers.items()]
     winner = players[0]
-    message = f"""The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"]}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}\n\nPlayers:\n"""
+    message = f'The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"]}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}\n\nPlayers:\n'
     for item in players:
         message += f'{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"]}: {item[1]["score"]}\n'
     update.message.reply_markdown(message)
@@ -75,7 +106,7 @@ def setAndSendWord(update, context):
 def welcome_group_addition(update, context):
     new_members = update.message.new_chat_members
     for member in new_members:
-        if(member.id=='bot_id'):
+        if(member.id=='bot_id_must_be_int'):
             context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! You just added the Unscramble Game bot to your group. \nTo start a game, use the /startGame command and join the game using the join button.\nBy continuing to use this bot, you are agreeing to the /terms of service. Enjoy!")
             
 
@@ -95,27 +126,64 @@ def checkSolution(update, context):
             games[chat_id]["players"][user["id"]]["score"] += 1
             return setAndSendWord(update, context)
 
+def extendJoinTime(update, context):
+    chat_id = update.message.chat_id
+    t = games[chat_id]["gameStarter"]
+    t.kill()
+    t.join()
+    context.bot.send_message(chat_id=chat_id, text="Join time extended. You can always /force start the game.")
+    games[chat_id]["gameStarter"] = KillableThread(target=gameStarter, args=(update,context))
+    games[chat_id]["gameStarter"].start()
+
+def forceStartGame(update, context):
+    chat_id = update.message.chat_id
+    t = games[chat_id]["gameStarter"]
+    t.kill()
+    t.join()
+    context.bot.send_message(chat_id=update.effective_chat.id, text='Starting game... Buckle Up!')
+    games[update.message.chat_id]["active"] = True
+    games[chat_id]["gameEndTimer"] = threading.Timer(1, gameEndTimer, args=(update,context))
+    games[chat_id]["gameEndTimer"].start()
+    return setAndSendWord(update, context)
+
+def gameStarter(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="You have 90 seconds to join the game")
+    time.sleep(30)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="one minute left to join the game")
+    time.sleep(30)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="30 seconds left to join the game")
+    time.sleep(20)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="10 seconds left to join the game")
+    time.sleep(10)
+    context.bot.send_message(chat_id=update.effective_chat.id, text='Starting game... Buckle Up!')
+    games[update.message.chat_id]["active"] = True
+    games[update.message.chat_id]["gameEndTimer"] = threading.Timer(1, gameEndTimer, args=(update,context))
+    games[update.message.chat_id]["gameEndTimer"].start()
+    return setAndSendWord(update, context)
+
 def startGame(update, context):
 
     chat_id = update.message.chat_id
 
     if chat_id not in games:
-        games[chat_id] = {"current": "", "correct": "", "solved": True, "active": False, "players": {}}
+        games[chat_id] = {
+            "current": "", 
+            "correct": "", 
+            "solved": True, 
+            "active": False, 
+            "players": {},
+            "gameStarter": KillableThread(target=gameStarter, args=(update,context))
+        }
 
         keyboard = [[InlineKeyboardButton("Join", url=f'https://t.me/unscramblegamebot?start={chat_id}', callback_data='1')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        update.message.reply_text('An unscamble game is starting!\nJoin the game using the join button. When you\'re ready, use the /startGame command again to start the game.', reply_markup=reply_markup)
-    elif(len(games[chat_id]["players"]) >= 1):
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Starting game... Buckle Up!')
-        games[chat_id]["active"] = True
-        return setAndSendWord(update, context)
-    else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='You need at least two players to start the game.')
+        update.message.reply_text('An unscamble game is starting!\nJoin the game using the join button. You can always /force start the game.', reply_markup=reply_markup)
+        games[chat_id]["gameStarter"].start()
 
 
 def terms(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='markdown', text='*Terms of Service:* \n\nI hereby agree to send @ahmedXabdeen a box of homemade cookies whenever he asks for them.')
+    context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='markdown', text='*Terms of Service:* \n\nI hereby agree to send @ahmedXabdeen a bag of homemade cookies whenever he asks for them.')
 
 
 
@@ -126,11 +194,17 @@ def terms(update, context):
 start_handler = CommandHandler('start', start)
 terms_handler = CommandHandler('terms', terms)
 end_handler = CommandHandler('end', gameEnder)
+players_handler = CommandHandler('players', players)
 startGame_handler = CommandHandler('startGame', startGame)
+extendJoinTime_handler = CommandHandler('extend', extendJoinTime)
+forceStartGame_handler = CommandHandler('force', forceStartGame)
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(terms_handler)
 dispatcher.add_handler(end_handler)
+dispatcher.add_handler(players_handler)
 dispatcher.add_handler(startGame_handler)
+dispatcher.add_handler(extendJoinTime_handler)
+dispatcher.add_handler(forceStartGame_handler)
 dispatcher.add_handler(MessageHandler(Filters.text, checkSolution))
 dispatcher.add_handler(MessageHandler(this_filter_aint_filtering_shit, checkGroupAddition), group=9)
 
