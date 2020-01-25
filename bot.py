@@ -165,8 +165,8 @@ def forceStartGame(update, context):
         games[update.message.chat_id]["gameEndTimers"] = [
                     threading.Timer(60, sendEndTimer, args=(update,context,'two minutes',0)),
                     threading.Timer(60, sendEndTimer, args=(update,context, 'one minute', 1)),
-                    threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 1)),
-                    threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 2)),
+                    threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 2)),
+                    threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 3)),
                     threading.Timer(10, gameEnder, args=(update,context)),
                 ]
         games[update.message.chat_id]["gameEndTimers"][0].start()
@@ -182,8 +182,8 @@ def gameStarter(update, context):
         games[update.message.chat_id]["gameEndTimers"] = [
                     threading.Timer(60, sendEndTimer, args=(update,context,'two minutes',0)),
                     threading.Timer(60, sendEndTimer, args=(update,context, 'one minute', 1)),
-                    threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 1)),
-                    threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 2)),
+                    threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 2)),
+                    threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 3)),
                     threading.Timer(10, gameEnder, args=(update,context)),
                 ]
         games[update.message.chat_id]["gameEndTimers"][0].start()
