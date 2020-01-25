@@ -3,6 +3,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import logging, random, string, time
 import threading 
 from KillableThread import KillableThread
+import os
 
 class FilterNoShit(BaseFilter):
     def filter(self, message):
@@ -10,10 +11,13 @@ class FilterNoShit(BaseFilter):
 
 this_filter_aint_filtering_shit = FilterNoShit()
 
+TOKEN = os.environ['TOKEN']
+bot_id = TOKEN=os.environ['BOTID']
+
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-updater = Updater(token='TOKEN', use_context=True)
+updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
 games = {}
@@ -106,7 +110,7 @@ def setAndSendWord(update, context):
 def welcome_group_addition(update, context):
     new_members = update.message.new_chat_members
     for member in new_members:
-        if(member.id=='bot_id_must_be_int'):
+        if(member.id==bot_id):
             context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! You just added the Unscramble Game bot to your group. \nTo start a game, use the /startGame command and join the game using the join button.\nBy continuing to use this bot, you are agreeing to the /terms of service. Enjoy!")
             
 
