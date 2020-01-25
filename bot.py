@@ -13,7 +13,6 @@ this_filter_aint_filtering_shit = FilterNoShit()
 TOKEN = os.environ['TOKEN']
 bot_id = TOKEN=os.environ['BOTID']
 
-
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 updater = Updater(token=TOKEN, use_context=True)
@@ -106,13 +105,11 @@ def setAndSendWord(update, context):
         games[chat_id]["timer"] = threading.Timer(15.0, wordTimeOut, args=(update,context))
         games[chat_id]["timer"].start()
 
-    
-
 def welcome_group_addition(update, context):
     new_members = update.message.new_chat_members
     for member in new_members:
         if(member.id==bot_id):
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! You just added the Unscramble Game bot to your group. \nTo start a game, use the /startGame command and join the game using the join button.\nBy continuing to use this bot, you are agreeing to the /terms of service. Enjoy!")
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! You just added the Unscramble Game bot to your group. \n\nTo start a game, use the /startGame command and join the game using the join button.\n\nBy continuing to use this bot, you are agreeing to the /terms of service. Enjoy!")
             
 
 def checkGroupAddition(update, context):
@@ -155,7 +152,7 @@ def forceStartGame(update, context):
         update.message.reply_text("There's no active game, start one with /startGame")
         return
     players = games[chat_id]["players"]
-    if(len(players) >=1 ):
+    if(len(players) >=2 ):
         timers = games[chat_id]["gameStarterTimers"]
         for item in timers:
             if(hasattr(item, 'cancel')):
@@ -173,12 +170,10 @@ def forceStartGame(update, context):
     else:
         update.message.reply_text('You need at least two players to play the game')
         
-
 def gameStarter(update, context):
     chat_id = update.message.chat_id
     players = games[chat_id]["players"]
-    if(len(players) >=1 ):
-
+    if(len(players) >=2 ):
         games[update.message.chat_id]["active"] = True
         games[update.message.chat_id]["gameEndTimers"] = [
                     threading.Timer(30, sendEndTimer, args=(update,context, 'one minute', 0)),
@@ -196,9 +191,6 @@ def sendRemainingTime(update, context, remaining, index):
     chat_id = update.message.chat_id
     context.bot.send_message(chat_id=chat_id, text=f'{remaining} left to join game')
     games[chat_id]["gameStarterTimers"][index+1].start()
-
-
-    pass
 
 def startGame(update, context):
 
@@ -221,17 +213,11 @@ def startGame(update, context):
 
         keyboard = [[InlineKeyboardButton("Join", url=f'https://t.me/unscramblegamebot?start={chat_id}', callback_data='1')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text('An unscamble game is starting!\n\nJoin the game using the join button. You can always /force start the game.', reply_markup=reply_markup)
+        update.message.reply_text('An unscamble game is starting!\nJoin the game using the join button.\n\nYou can always /force start the game.', reply_markup=reply_markup)
         games[chat_id]["gameStarterTimers"][0].start()
 
 def terms(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='markdown', text='*Terms of Service:* \n\nI hereby agree to send @ahmedXabdeen a bag of homemade cookies whenever he asks for them.')
-
-
-
-
-
-
 
 start_handler = CommandHandler('start', start)
 terms_handler = CommandHandler('terms', terms)
@@ -250,9 +236,5 @@ dispatcher.add_handler(forceStartGame_handler)
 dispatcher.add_handler(MessageHandler(Filters.text, checkSolution))
 dispatcher.add_handler(MessageHandler(this_filter_aint_filtering_shit, checkGroupAddition), group=9)
 
-
 updater.start_polling()
-
 updater.idle()
-
-
