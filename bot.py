@@ -117,17 +117,7 @@ def startGame(update, context):
 def terms(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='markdown', text='*Terms of Service:* \n\nI hereby agree to send @ahmedXabdeen a box of homemade cookies whenever he asks for them.')
 
-# games = {
-#     "chat_id": {
-#         "current": "current word to be solved",
-#         "correct": "correct word",
-#         "solved": "boolean, whether it's solved or not",
-#         "active": "boolean, whether game is active or not",
-#         "players": {
-#             "playerid": "score"
-#         },
-#     }
-# }
+
 
 
 
