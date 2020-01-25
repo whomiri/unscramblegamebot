@@ -102,7 +102,7 @@ def setAndSendWord(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text=f"The word to solve is: \n{games[chat_id]['current']}")
 
         games[chat_id]["solved"] = False
-        games[chat_id]["timer"] = threading.Timer(15.0, wordTimeOut, args=(update,context))
+        games[chat_id]["timer"] = threading.Timer(25.0, wordTimeOut, args=(update,context))
         games[chat_id]["timer"].start()
 
 def welcome_group_addition(update, context):
@@ -160,7 +160,8 @@ def forceStartGame(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text='Starting game... Buckle Up!')
         games[update.message.chat_id]["active"] = True
         games[update.message.chat_id]["gameEndTimers"] = [
-                    threading.Timer(30, sendEndTimer, args=(update,context,'one minute',0)),
+                    threading.Timer(60, sendEndTimer, args=(update,context,'two minutes',0)),
+                    threading.Timer(60, sendEndTimer, args=(update,context, 'one minute', 1)),
                     threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 1)),
                     threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 2)),
                     threading.Timer(10, gameEnder, args=(update,context)),
@@ -176,7 +177,8 @@ def gameStarter(update, context):
     if(len(players) >=2 ):
         games[update.message.chat_id]["active"] = True
         games[update.message.chat_id]["gameEndTimers"] = [
-                    threading.Timer(30, sendEndTimer, args=(update,context, 'one minute', 0)),
+                    threading.Timer(60, sendEndTimer, args=(update,context,'two minutes',0)),
+                    threading.Timer(60, sendEndTimer, args=(update,context, 'one minute', 1)),
                     threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 1)),
                     threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 2)),
                     threading.Timer(10, gameEnder, args=(update,context)),
