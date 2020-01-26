@@ -67,6 +67,7 @@ def gameEnder(update, context):
         if(hasattr(item, 'cancel')):
             item.cancel()
     games[chat_id]["active"] = False
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
     games[chat_id]["timer"].cancel()
     players = games[chat_id]["players"]
     context.bot.send_message(chat_id=chat_id, text="Ending this game session, calculating scores...")
