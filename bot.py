@@ -4,7 +4,7 @@ import logging, random, string, time
 import threading 
 import os
 
-TOKEN= "1408034311:AAFOieOrcTduDzB3Bypz-oOfKieTGOq6vfM"
+TOKEN= "1408034311:AAFW5_6PsLCUbJ2H2wcGv-xDAg8oru-8Zkc"
 bot_id = TOKEN= "1408034311"
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
