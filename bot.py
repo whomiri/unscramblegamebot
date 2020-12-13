@@ -5,7 +5,7 @@ import threading
 import os
 
 TOKEN = os.environ[1408034311:AAFtnThBvLoGXn3I0j7hR6RZ8ajnNym34Rs]
-bot_id = TOKEN=os.environ[giraffegame_bot]
+bot_id = TOKEN=os.environ[@giraffegame_bot]
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
