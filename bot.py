@@ -42,7 +42,7 @@ def start(update, context):
 def players(update, context):
     chat_id = update.message.chat_id
     if chat_id not in games:
-        update.message.reply_text("There's no active game, start one with /startGame")
+        update.message.reply_text("Hal hazırda aktiv oyun yoxdur, oyun başlatmağ üçün /startgame yazın")
         return
     players = games[chat_id]["players"]
     finalPlayers = {k: v for k, v in sorted(players.items(), key=lambda item: item[1]['score'], reverse=True)}
@@ -60,7 +60,7 @@ def sendEndTimer(update, context, remaining, index):
 def gameEnder(update, context):
     chat_id = update.message.chat_id
     if chat_id not in games:
-        update.message.reply_text("There's no active game, start one with /startGame")
+        update.message.reply_text("Hal hazırda aktiv oyun yoxdur, oyun başlatmağ üçün /startgame yazın")
         return
     timers = games[chat_id]["gameEndTimers"]
     for item in timers:
@@ -129,7 +129,7 @@ def checkSolution(update, context):
 def extendJoinTime(update, context):
     chat_id = update.message.chat_id
     if chat_id not in games:
-        update.message.reply_text("There's no active game, start one with /startGame")
+        update.message.reply_text("Hal hazırda aktiv oyun yoxdur, oyun başlatmağ üçün /startgame yazın")
         return
     timers = games[chat_id]["gameStarterTimers"]
     for item in timers:
@@ -147,7 +147,7 @@ def extendJoinTime(update, context):
 def forceStartGame(update, context):
     chat_id = update.message.chat_id
     if chat_id not in games:
-        update.message.reply_text("There's no active game, start one with /startGame")
+        update.message.reply_text("Hal hazırda aktiv oyun yoxdur, oyun başlatmağ üçün /startgame yazın")
         return
     players = games[chat_id]["players"]
     if(len(players) >=2 ):
@@ -167,7 +167,7 @@ def forceStartGame(update, context):
         games[update.message.chat_id]["gameEndTimers"][0].start()
         return setAndSendWord(update, context)
     else:
-        update.message.reply_text('You need at least two players to play the game')
+        update.message.reply_text('Oyuna başlamağ üçün ən azı 2 nəfərə ehtiyac vardır')
         
 def gameStarter(update, context):
     chat_id = update.message.chat_id
@@ -214,7 +214,7 @@ def startGame(update, context):
 
         keyboard = [[InlineKeyboardButton("Join", url=f'https://t.me/unscramblegamebot?start={chat_id}', callback_data='1')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text('An unscamble game is starting!\nJoin the game using the join button.\n\nYou can always /force start the game.', reply_markup=reply_markup)
+        update.message.reply_text('Giraffe oyunu başladıldı!\nQoşulmağ üçün düyməni klikləyin.\n\nYou can always /force start the game.', reply_markup=reply_markup)
         games[chat_id]["gameStarterTimers"][0].start()
 
 def terms(update, context):
