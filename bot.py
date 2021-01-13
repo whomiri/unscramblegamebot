@@ -4,8 +4,8 @@ import logging, random, string, time
 import threading 
 import os
 
-TOKEN = os.environ['TOKEN']
-bot_id = TOKEN=os.environ['BOTID']
+TOKEN = '1577248593:AAHtGw_4BdYWP7F6AstE2VgpsLYxdtieTnY'
+bot_id = '1577248593'
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
